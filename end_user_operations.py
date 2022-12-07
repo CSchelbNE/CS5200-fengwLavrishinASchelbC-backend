@@ -16,7 +16,7 @@ end_user_router = APIRouter(
 
 
 @end_user_router.post("/add-user")
-def add_new_user(user: User, db: AsyncEngine = Depends(get_db)):
+async def add_new_user(user: User, db: AsyncEngine = Depends(get_db)):
     async with db.begin() as conn:
         hashed_password = hash(user.password)  # hashed pw is stored in models.User.password
         # conn = db.connect()
@@ -36,7 +36,7 @@ def get_users(db: Engine = Depends(get_db)):
 
 
 @end_user_router.post("/login", response_model_exclude_none=True)
-def login(credentials: Credentials, db: AsyncEngine = Depends(get_db)):
+async def login(credentials: Credentials, db: AsyncEngine = Depends(get_db)):
     async with db.begin() as conn:
         try:
             # in DB - find 1st matching username
