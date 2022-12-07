@@ -1,3 +1,5 @@
+import passlib
+
 from database import get_db
 from sqlalchemy.engine import Engine
 from fastapi import Response, status, HTTPException, Depends
@@ -29,7 +31,7 @@ def add_new_user(user: User, db: Engine = Depends(get_db)):
 @end_user_router.get("/user", response_model_exclude_none=True)
 def get_users(db: Engine = Depends(get_db)):
     # return db.execute("""SELECT * FROM users""").all()
-    return db.execute("""CALL getUsers""")
+    return db.execute("""CALL getUsers""").all()
 
 
 @end_user_router.post("/login", response_model_exclude_none=True)
