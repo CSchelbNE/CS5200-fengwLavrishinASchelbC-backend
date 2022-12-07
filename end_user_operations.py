@@ -16,7 +16,6 @@ end_user_router = APIRouter(
 
 @end_user_router.post("/add-user")
 def add_new_user(user: User, db: Engine = Depends(get_db)):
-    print(user)
     hashed_password = hash(user.password)  # hashed pw is stored in models.User.password
     conn = db.connect()
     trans = conn.begin()
@@ -36,12 +35,13 @@ def get_users(db: Engine = Depends(get_db)):
 
 @end_user_router.post("/login", response_model_exclude_none=True)
 def login(credentials: Credentials, db: Engine = Depends(get_db)):
-    print(credentials)
     try:
         conn = db.connect()
+        trans = conn.begin()
         # in DB - find 1st matching username
         # result = conn.execute(f"""SELECT * FROM users WHERE name = %s""", (str(credentials.username),)).first()
-        result = db.execute(f"""CALL getSpecificUser(%s)""", (str(credentials.username))).first()
+        result = conn.execute(f"""CALL getSpecificUser(%s)""", (str(credentials.username))).first()
+        trans.commit()
         if verify_password(credentials.password, result.password):
             return result  # if inputted pw matches stored(hashed) pw, return the user
 
