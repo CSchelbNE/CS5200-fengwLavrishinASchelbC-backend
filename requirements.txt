@@ -1,0 +1,7 @@
+backend==0.2.4.1
+fastapi==0.88.0
+passlib==1.7.4
+pydantic==1.10.2
+SQLAlchemy==1.4.44
+starlette==0.23.0
+uvicorn==0.20.0
