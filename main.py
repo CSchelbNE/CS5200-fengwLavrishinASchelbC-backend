@@ -1,7 +1,8 @@
+import uvicorn
 from fastapi import FastAPI # Fast api framework
 from starlette.middleware.cors import CORSMiddleware
-from end_user_operations import end_user_router
-from ticket_operations import ticket_router
+from backend.end_user_operations import end_user_router
+from backend.ticket_operations import ticket_router
 from admin_operations import admin_router
 from technician_operations import technician_router
 
@@ -28,20 +29,19 @@ app.include_router(technician_router)
 # app.include_router(auth.router)
 #
 # Handles cross origin requests from front and backend
-# origins = [
-#     "http://localhost:3000",
-#     "https://localhost:3000/",
-#     "localhost:3000/*",
-#     "https://storied-cheesecake-d437f5.netlify.app:0/*"
-# ]
+origins = [
+    "http://localhost:3000",
+    "https://localhost:3000/",
+    "localhost:3000/*"
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
 )
-#
-# if __name__ == "__main__":
-#     uvicorn.run("main:app", host="localhost", port=8000, reload=True)
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="localhost", port=8000, reload=True)

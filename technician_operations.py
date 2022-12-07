@@ -12,12 +12,7 @@ technician_router = APIRouter(
 
 @technician_router.get("/get-open-tickets/{tech_id}")
 def get_all_open_tickets(tech_id: int, db: Engine = Depends(get_db)):
-    conn = db.connect()
-    trans = conn.begin()
-    # return db.execute("""CALL filterOpenTicketsByTechnician(%s)""", (str(tech_id))).all()
-    openTickets = db.execute(f"""CALL filterOpenTicketsByTechnician(%s)""", (str(tech_id))).all()
-    trans.commit()
-    return openTickets
+    return db.execute("""CALL filterOpenTicketsByTechnician(%s)""", (str(tech_id))).all()
 
 
 @technician_router.put("/accept-ticket/")

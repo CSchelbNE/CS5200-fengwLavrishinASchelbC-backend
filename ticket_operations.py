@@ -12,12 +12,8 @@ ticket_router = APIRouter(
 
 @ticket_router.get("/get-tickets/{user_id}")
 def get_users_tickets(user_id: int, db: Engine = Depends(get_db)):
-    conn = db.connect()
-    trans = conn.begin()
-    # return db.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).all()
-    allTickets = db.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).all()
-    trans.commit()
-    return allTickets
+    return db.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).all()
+
 
 # SELECT * FROM ticket NATURAL JOIN problem WHERE user_id = %s
 
@@ -42,8 +38,7 @@ def edit_ticket(ticket: Ticket, ticket_id: int, db: Engine = Depends(get_db)):
 def delete_ticket(ticket_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
     trans = conn.begin()
-    # conn.execute(f"""DELETE FROM ticket WHERE ticket_id = %s""", str(ticket_id))
-    conn.execute(f"""CALL deleteFromTicket(%s)""", (str(ticket_id)))
+    conn.execute(f"""DELETE FROM ticket WHERE ticket_id = %s""", str(ticket_id))
     trans.commit()
     return {"ticket_id": ticket_id}
 
