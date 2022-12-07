@@ -12,7 +12,6 @@ end_user_router = APIRouter(
     tags=['users']
 )
 
-
 @end_user_router.post("/add-user")
 def add_new_user(user: User, db: Engine = Depends(get_db)):
     print(user)
