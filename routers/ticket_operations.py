@@ -1,6 +1,3 @@
-import sys
-
-sys.path.append("../")
 from backend.database import get_db
 from sqlalchemy.engine import Engine
 from fastapi import Depends

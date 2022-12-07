@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append("../")
-import passlib.exc
 from backend.database import get_db
 from sqlalchemy.engine import Engine
 from fastapi import Response, status, HTTPException, Depends
