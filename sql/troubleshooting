@@ -1,0 +1,12 @@
+# FastAPI calls
+the reference to get_db is passed in as an object, not evoking it as a parameter (get_db vs get_db())
+
+
+#Routers
+The prefix of each router is determined by the specified prefix,
+if the router denotes /user then an api call to /user will be the path /user/user
+
+
+testing git pull mech
+
+another commit test
