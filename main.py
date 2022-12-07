@@ -31,7 +31,8 @@ app.include_router(technician_router)
 origins = [
     "http://localhost:3000",
     "https://localhost:3000/",
-    "localhost:3000/*"
+    "localhost:3000/*",
+    "https://storied-cheesecake-d437f5.netlify.app/"
 ]
 
 app.add_middleware(
