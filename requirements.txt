@@ -4,3 +4,4 @@ pydantic==1.10.2
 SQLAlchemy==1.4.44
 starlette==0.22.0
 uvicorn==0.20.0
+PyMySql==1.0.2
