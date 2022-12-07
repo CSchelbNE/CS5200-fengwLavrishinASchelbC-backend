@@ -32,7 +32,7 @@ origins = [
     "http://localhost:3000",
     "https://localhost:3000/",
     "localhost:3000/*",
-    "https://storied-cheesecake-d437f5.netlify.app/"
+    "https://storied-cheesecake-d437f5.netlify.app:0/"
 ]
 
 app.add_middleware(
