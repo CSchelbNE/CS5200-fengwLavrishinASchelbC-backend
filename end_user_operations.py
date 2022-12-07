@@ -6,11 +6,11 @@ from fastapi import APIRouter
 from utils import hash, verify_password
 from schemas import User, Credentials, Survey
 
-
 end_user_router = APIRouter(
     prefix="/users",
     tags=['users']
 )
+
 
 @end_user_router.post("/add-user")
 def add_new_user(user: User, db: Engine = Depends(get_db)):
@@ -19,7 +19,8 @@ def add_new_user(user: User, db: Engine = Depends(get_db)):
     conn = db.connect()
     trans = conn.begin()
     new_user = conn.execute(f"""CALL createUser(%s,%s,%s,%s,%s,%s)""", (str(hashed_password),
-                                                str(user.type), str(user.name), str(user.address),
+                                                                        str(user.type), str(user.name),
+                                                                        str(user.address),
                                                                         str(user.email), str(user.campus))).first()
 
     trans.commit()
@@ -48,8 +49,3 @@ def login(credentials: Credentials, db: Engine = Depends(get_db)):
 
     except passlib.exc.UnknownHashError:
         print("***** passlib.exc.UnknownHashError: User potentially has unhashed password stored in DB *****")
-
-
-
-
-
