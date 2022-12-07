@@ -1,7 +1,6 @@
+import sqlalchemy as sql
 from sqlalchemy.ext.declarative import declarative_base
-
-from sqlalchemy.ext.asyncio import create_async_engine
-
+from sqlalchemy.orm import sessionmaker
 
 REMOTE_DATABASE_URL = "mysql+pymysql://admin:cs5200finalproject@database-1.c5mdh4lrufto.us-east-2.rds.amazonaws.com" \
                       "/ticket_system"
@@ -17,18 +16,13 @@ REMOTE_DATABASE_URL = "mysql+pymysql://admin:cs5200final@database-1.c5mdh4lrufto
                       "/ticket_system"
 
 # aws remote server password is cs5200finalproject
-# engine = sql.create_engine(REMOTE_DATABASE_URL,
-#                            connect_args=dict(host='database-1.c5mdh4lrufto.us-east-2.rds.amazonaws.com', port=3306))
-
-engine = create_async_engine(
-    REMOTE_DATABASE_URL,
-    echo=True,
-)
+engine = sql.create_engine(LOCAL_HOST_URL,
+                           connect_args=dict(host='localhost', port=3306))
 while True:
     try:
         conn = engine.connect()
         Base = declarative_base()
-        # session = scoped_session(sessionmaker(autocommit=True, autoflush=False, bind=engine))
+        # session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         conn.execute("USE ticket_system")
         print("Database connection was successful")
         break
@@ -40,7 +34,7 @@ while True:
 def get_db():
     # db = session()
     try:
-        yield engine
+        yield conn
     finally:
         pass
     #     db.close()

@@ -6,7 +6,6 @@ from fastapi import Response, status, HTTPException, Depends
 from fastapi import APIRouter
 from utils import hash, verify_password
 from schemas import User, Credentials, Survey
-from sqlalchemy.ext.asyncio.engine import AsyncEngine
 
 
 end_user_router = APIRouter(
@@ -16,17 +15,16 @@ end_user_router = APIRouter(
 
 
 @end_user_router.post("/add-user")
-async def add_new_user(user: User, db: AsyncEngine = Depends(get_db)):
-    async with db.begin() as conn:
-        hashed_password = hash(user.password)  # hashed pw is stored in models.User.password
-        # conn = db.connect()
-        # trans = conn.begin()
-        new_user = await conn.execute(f"""CALL createUser(%s,%s,%s,%s,%s,%s)""", (str(hashed_password),
-                                                    str(user.type), str(user.name), str(user.address),
-                                                                            str(user.email), str(user.campus))).first()
+def add_new_user(user: User, db: Engine = Depends(get_db)):
+    hashed_password = hash(user.password)  # hashed pw is stored in models.User.password
+    conn = db.connect()
+    trans = conn.begin()
+    new_user = conn.execute(f"""CALL createUser(%s,%s,%s,%s,%s,%s)""", (str(hashed_password),
+                                                str(user.type), str(user.name), str(user.address),
+                                                                        str(user.email), str(user.campus))).first()
 
-        await db.dispose()
-        return new_user
+    trans.commit()
+    return new_user
 
 
 @end_user_router.get("/user", response_model_exclude_none=True)
@@ -36,23 +34,24 @@ def get_users(db: Engine = Depends(get_db)):
 
 
 @end_user_router.post("/login", response_model_exclude_none=True)
-async def login(credentials: Credentials, db: AsyncEngine = Depends(get_db)):
-    async with db.begin() as conn:
-        try:
-            # in DB - find 1st matching username
-            # result = conn.execute(f"""SELECT * FROM users WHERE name = %s""", (str(credentials.username),)).first()
-            result = await conn.execute(f"""CALL getSpecificUser(%s)""", (str(credentials.username))).first()
-            if verify_password(credentials.password, result.password):
-                await db.dispose()
-                return result  # if inputted pw matches stored(hashed) pw, return the user
+def login(credentials: Credentials, db: Engine = Depends(get_db)):
+    try:
+        conn = db.connect()
+        trans = conn.begin()
+        # in DB - find 1st matching username
+        # result = conn.execute(f"""SELECT * FROM users WHERE name = %s""", (str(credentials.username),)).first()
+        result = conn.execute(f"""CALL getSpecificUser(%s)""", (str(credentials.username))).first()
+        trans.commit()
+        if verify_password(credentials.password, result.password):
+            return result  # if inputted pw matches stored(hashed) pw, return the user
 
-        except AttributeError:
-            print("***** AttributeError: Ensure username is valid *****")
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Invalid login credentials")
+    except AttributeError:
+        print("***** AttributeError: Ensure username is valid *****")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Invalid login credentials")
 
-        except passlib.exc.UnknownHashError:
-            print("***** passlib.exc.UnknownHashError: User potentially has unhashed password stored in DB *****")
+    except passlib.exc.UnknownHashError:
+        print("***** passlib.exc.UnknownHashError: User potentially has unhashed password stored in DB *****")
 
 
 

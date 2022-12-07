@@ -4,7 +4,6 @@ from fastapi import Depends
 from fastapi import APIRouter
 from schemas import Ticket, Survey
 
-
 ticket_router = APIRouter(
     prefix="/tickets",
     tags=['tickets']
@@ -15,6 +14,7 @@ ticket_router = APIRouter(
 def get_users_tickets(user_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
     trans = conn.begin()
+    # return db.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).all()
     allTickets = db.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).all()
     trans.commit()
     return allTickets
