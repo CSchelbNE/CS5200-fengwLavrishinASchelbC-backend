@@ -22,7 +22,7 @@ while True:
     try:
         conn = engine.connect()
         Base = declarative_base()
-        session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        # session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         conn.execute("USE ticket_system")
         print("Database connection was successful")
         break
@@ -33,9 +33,10 @@ while True:
 
 
 def get_db():
-    db = session()
+    # db = session()
     try:
         yield conn
     finally:
-        db.close()
+        pass
+    #     db.close()
 
