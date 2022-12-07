@@ -16,7 +16,7 @@ REMOTE_DATABASE_URL = "mysql+pymysql://admin:cs5200finalproject@database-1.c5mdh
                       "/ticket_system"
 
 # aws remote server password is cs5200finalproject
-engine = sql.create_engine(LOCAL_HOST_URL,
+engine = sql.create_engine(REMOTE_DATABASE_URL,
                            connect_args=dict(host='localhost', port=3306))
 while True:
     try:
@@ -29,6 +29,7 @@ while True:
     except Exception as error:
         print("Connection failed")
         print("Error:" + error.__str__())
+        break;
 
 
 def get_db():
