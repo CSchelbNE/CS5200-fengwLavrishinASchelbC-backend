@@ -29,6 +29,9 @@ def get_users_tickets(user_id: int, db: Engine = Depends(get_db)):
     except sqlalchemy.exc.InvalidRequestError as err:
         trans.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+    except sqlalchemy.exc.InternalError as err:
+        trans.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
 
 
 
@@ -49,6 +52,9 @@ def get_users_closed_tickets(user_id: int, db: Engine = Depends(get_db)):
         trans.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="OPS ERROR")
     except sqlalchemy.exc.InvalidRequestError as err:
+        trans.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+    except sqlalchemy.exc.InternalError as err:
         trans.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
 
@@ -101,6 +107,11 @@ def create_ticket(ticket: Ticket, db: Engine = Depends(get_db)):
     except sqlalchemy.exc.InvalidRequestError as err:
         trans.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+    except sqlalchemy.exc.InternalError as err:
+        trans.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+
+
 
 
 @ticket_router.get("/get-comments/{ticket_id}")
