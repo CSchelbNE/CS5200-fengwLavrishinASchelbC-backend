@@ -130,13 +130,13 @@ def create_ticket(ticket: Ticket, db: Engine = Depends(get_db)):
                                           (str(ticket.subject), str(ticket.type),
                                            str(ticket.description), str(ticket.priority), str(ticket.status),
                                            str(ticket.date_created),
-                                           str(ticket.user_id))).first()
+                                           str(ticket.user_id))).fetchone()
             else:
                 new_ticket = conn.execute(f"""call createTicket(%s,%s,%s,%s,%s,%s,%s)""",
                                           (str(ticket.subject), str(ticket.type),
                                            str(ticket.description), str(ticket.priority), str(ticket.status),
                                            str(ticket.date_created),
-                                           str(ticket.user_id))).first()
+                                           str(ticket.user_id))).fetchone()
             trans.commit()
             return new_ticket
         except sqlalchemy.exc.PendingRollbackError as err:
@@ -154,6 +154,9 @@ def create_ticket(ticket: Ticket, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InterfaceError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
+        except Exception as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="UNKNOWN SERVER ERR")
 
 
 @ticket_router.get("/get-comments/{ticket_id}")
