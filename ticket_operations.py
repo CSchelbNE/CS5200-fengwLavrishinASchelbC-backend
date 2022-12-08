@@ -1,8 +1,10 @@
+import sqlalchemy.exc
+
 from database import get_db
 from sqlalchemy.engine import Engine
-from fastapi import Depends
 from fastapi import APIRouter
 from schemas import Ticket, Survey
+from fastapi import status, HTTPException, Depends
 
 ticket_router = APIRouter(
     prefix="/tickets",
@@ -12,7 +14,15 @@ ticket_router = APIRouter(
 
 @ticket_router.get("/get-tickets/{user_id}")
 def get_users_tickets(user_id: int, db: Engine = Depends(get_db)):
-    return db.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).all()
+    conn = db.connect()
+    trans = conn.begin()
+    try:
+        res = db.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).all()
+        trans.commit()
+        return res
+    except sqlalchemy.exc.OperationalError as err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server outage")
+
 
 
 # SELECT * FROM ticket NATURAL JOIN problem WHERE user_id = %s
