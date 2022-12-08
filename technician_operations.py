@@ -58,7 +58,7 @@ def accept_open_ticket(ticket_id: int, tech_id: int, db: Engine = Depends(get_db
 @technician_router.get("/get-assigned-tickets/{tech_id}")
 def get_assigned_tickets(tech_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
-    with conn.begin as trans:
+    with conn.begin() as trans:
         try:
             res = conn.execute(f"""CALL filterAcceptedTicketsByTechnician(%s)""", (str(tech_id),)).all()
             trans.commit()
