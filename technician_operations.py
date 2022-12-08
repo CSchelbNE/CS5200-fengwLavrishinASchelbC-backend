@@ -80,7 +80,7 @@ def get_assigned_tickets(tech_id: int, db: Engine = Depends(get_db)):
 @technician_router.put("/close-ticket/{ticket_id}")
 def close_ticket(ticket_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
-    with conn.begin as trans:
+    with conn.begin() as trans:
         try:
             res = db.execute(f"""CALL closeTicket(%s)""", (str(ticket_id))).first()
             trans.commit()
@@ -102,8 +102,21 @@ def close_ticket(ticket_id: int, db: Engine = Depends(get_db)):
 @technician_router.post("/create-comment/")
 def create_comment(comment: Comment, db: Engine = Depends(get_db)):
     conn = db.connect()
-    trans = conn.begin()
-    result = db.execute(f"""CALL createComment(%s, %s, %s)""", (str(comment.comment_body), str(comment.ticket_id),
+    with conn.begin() as trans:
+        try:
+            result = db.execute(f"""CALL createComment(%s, %s, %s)""", (str(comment.comment_body), str(comment.ticket_id),
                                                                 str(comment.tech_id))).first()
-    trans.commit()
-    return result
+            trans.commit()
+            return result
+        except sqlalchemy.exc.PendingRollbackError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="ROLLBACK OCCURRED")
+        except sqlalchemy.exc.OperationalError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="OPS ERROR")
+        except sqlalchemy.exc.InvalidRequestError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+        except sqlalchemy.exc.InternalError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
