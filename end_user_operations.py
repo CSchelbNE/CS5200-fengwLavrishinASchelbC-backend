@@ -1,4 +1,6 @@
 import passlib.exc
+import sqlalchemy.exc
+
 from database import get_db
 from sqlalchemy.engine import Engine
 from fastapi import Response, status, HTTPException, Depends
@@ -14,7 +16,6 @@ end_user_router = APIRouter(
 
 @end_user_router.post("/add-user")
 def add_new_user(user: User, db: Engine = Depends(get_db)):
-    print(user)
     hashed_password = hash(user.password)  # hashed pw is stored in models.User.password
     conn = db.connect()
     trans = conn.begin()
@@ -41,6 +42,10 @@ def login(credentials: Credentials, db: Engine = Depends(get_db)):
         result = conn.execute(f"""SELECT * FROM users WHERE name = %s""", (str(credentials.username),)).first()
         if verify_password(credentials.password, result.password):
             return result  # if inputted pw matches stored(hashed) pw, return the user
+    except sqlalchemy.exc.OperationalError:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Internal server outage")
+
+
 
     except AttributeError:
         print("***** AttributeError: Ensure username is valid *****")
