@@ -1,3 +1,5 @@
+import sqlalchemy.exc
+
 from database import get_db
 from sqlalchemy.engine import Engine
 from fastapi import Response, status, HTTPException, Depends
@@ -17,6 +19,9 @@ def get_all_open_tickets(tech_id: int, db: Engine = Depends(get_db)):
     try:
         res = db.execute("""CALL filterOpenTicketsByTechnician(%s)""", (str(tech_id))).all()
         return res
+    except sqlalchemy.exc.PendingRollbackError as err:
+        trans.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="ROLLBACK OCCURRED")
     except Exception as err:
         trans.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server outage")
@@ -30,14 +35,22 @@ def accept_open_ticket(ticket_id: int, tech_id: int, db: Engine = Depends(get_db
         new_assignemnt = conn.execute(f"CALL assignOpenTicket(%s,%s)", (str(ticket_id), str(tech_id))).first()
         trans.commit()
         return new_assignemnt
-    except Exception as err:
+    except sqlalchemy.exc.PendingRollbackError as err:
         trans.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server outage")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="ROLLBACK OCCURRED")
 
 
 @technician_router.get("/get-assigned-tickets/{tech_id}")
 def get_assigned_tickets(tech_id: int, db: Engine = Depends(get_db)):
-    return db.execute(f"""CALL filterAcceptedTicketsByTechnician(%s)""", (str(tech_id),)).all()
+    conn = db.connect()
+    trans = conn.begin()
+    try:
+        res = conn.execute(f"""CALL filterAcceptedTicketsByTechnician(%s)""", (str(tech_id),)).all()
+        trans.commit()
+        return res
+    except sqlalchemy.exc.PendingRollbackError as err:
+        trans.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="ROLLBACK OCCURRED")
 
 
 @technician_router.put("/close-ticket/{ticket_id}")
