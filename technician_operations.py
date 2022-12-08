@@ -17,7 +17,7 @@ def get_all_open_tickets(tech_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
     with conn.begin() as trans:
         try:
-            res = db.execute("""CALL filterOpenTicketsByTechnician(%s)""", (str(tech_id))).all()
+            res = db.execute("""CALL filterOpenTicketsByTechnician(%s)""", (str(tech_id))).fetchall()
             return res
         except sqlalchemy.exc.PendingRollbackError as err:
             trans.rollback()
@@ -28,6 +28,9 @@ def get_all_open_tickets(tech_id: int, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
         except Exception as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server outage")
@@ -53,6 +56,9 @@ def accept_open_ticket(ticket_id: int, tech_id: int, db: Engine = Depends(get_db
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
 
 
 @technician_router.get("/get-assigned-tickets/{tech_id}")
@@ -75,6 +81,9 @@ def get_assigned_tickets(tech_id: int, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
 
 
 @technician_router.put("/close-ticket/{ticket_id}")
@@ -97,6 +106,9 @@ def close_ticket(ticket_id: int, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
 
 
 @technician_router.post("/create-comment/")
@@ -120,3 +132,6 @@ def create_comment(comment: Comment, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")

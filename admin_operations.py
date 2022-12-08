@@ -31,6 +31,9 @@ def get_approvals(db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
 
 
 @admin_router.put("/status-change/{approval_id}")
@@ -53,3 +56,6 @@ def change_status(approval: Approval, approval_id: int, db: Engine = Depends(get
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")

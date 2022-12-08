@@ -35,6 +35,9 @@ def get_users_tickets(user_id: int, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InterfaceError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
 
 
 # SELECT * FROM ticket NATURAL JOIN problem WHERE user_id = %s
@@ -44,7 +47,7 @@ def get_users_closed_tickets(user_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
     with conn.begin() as trans:
         try:
-            res = conn.execute(f"""CALL selectClosedTicketsByID(%s)""", (str(user_id),)).all()
+            res = conn.execute(f"""CALL selectClosedTicketsByID(%s)""", (str(user_id),)).fetchall()
             trans.commit()
             return res
         except sqlalchemy.exc.PendingRollbackError as err:
@@ -59,6 +62,9 @@ def get_users_closed_tickets(user_id: int, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
 
 
 @ticket_router.put("/edit-ticket/{ticket_id}")
@@ -83,6 +89,9 @@ def edit_ticket(ticket: Ticket, ticket_id: int, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
 
 
 
@@ -106,6 +115,9 @@ def delete_ticket(ticket_id: int, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
 
 
 @ticket_router.post("/create-ticket")  # something here for if ticket == hardware: trigger
@@ -139,6 +151,9 @@ def create_ticket(ticket: Ticket, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
 
 
 @ticket_router.get("/get-comments/{ticket_id}")
@@ -146,7 +161,7 @@ def get_comments(ticket_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
     with conn.begin() as trans:
         try:
-            res = conn.execute(f"""CALL getCommentsByID(%s)""", (str(ticket_id))).all()
+            res = conn.execute(f"""CALL getCommentsByID(%s)""", (str(ticket_id))).fetchall()
             trans.commit()
             return res
         except sqlalchemy.exc.PendingRollbackError as err:
@@ -188,3 +203,6 @@ def complete_survey(ticket_id: int, survey: Survey, db: Engine = Depends(get_db)
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")

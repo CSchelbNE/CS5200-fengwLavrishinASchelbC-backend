@@ -38,6 +38,9 @@ def add_new_user(user: User, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
 
 
 
@@ -72,6 +75,9 @@ def login(credentials: Credentials, db: Engine = Depends(get_db)):
         except sqlalchemy.exc.InternalError as err:
             trans.rollback()
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERNAL ERROR")
+        except sqlalchemy.exc.InterfaceError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INTERFACE ERROR")
 
         except AttributeError:
             print("***** AttributeError: Ensure username is valid *****")
