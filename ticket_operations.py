@@ -15,23 +15,23 @@ ticket_router = APIRouter(
 @ticket_router.get("/get-tickets/{user_id}")
 def get_users_tickets(user_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
-    trans = conn.begin()
-    try:
-        res = conn.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).all()
-        trans.commit()
-        return res
-    except sqlalchemy.exc.PendingRollbackError as err:
-        trans.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="ROLLBACK OCCURRED")
-    except sqlalchemy.exc.OperationalError as err:
-        trans.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="OPS ERROR")
-    except sqlalchemy.exc.InvalidRequestError as err:
-        trans.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
-    except sqlalchemy.exc.InternalError as err:
-        trans.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+    with conn.begin as trans:
+        try:
+            res = conn.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).all()
+            trans.commit()
+            return res
+        except sqlalchemy.exc.PendingRollbackError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="ROLLBACK OCCURRED")
+        except sqlalchemy.exc.OperationalError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="OPS ERROR")
+        except sqlalchemy.exc.InvalidRequestError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+        except sqlalchemy.exc.InternalError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
 
 
 # SELECT * FROM ticket NATURAL JOIN problem WHERE user_id = %s
@@ -39,34 +39,48 @@ def get_users_tickets(user_id: int, db: Engine = Depends(get_db)):
 @ticket_router.get("/get-closed-tickets/{user_id}")
 def get_users_closed_tickets(user_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
-    trans = conn.begin()
-    try:
-        res = conn.execute(f"""CALL selectClosedTicketsByID(%s)""", (str(user_id),)).all()
-        trans.commit()
-        return res
-    except sqlalchemy.exc.PendingRollbackError as err:
-        trans.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="ROLLBACK OCCURRED")
-    except sqlalchemy.exc.OperationalError as err:
-        trans.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="OPS ERROR")
-    except sqlalchemy.exc.InvalidRequestError as err:
-        trans.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
-    except sqlalchemy.exc.InternalError as err:
-        trans.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+    with conn.begin() as trans:
+        try:
+            res = conn.execute(f"""CALL selectClosedTicketsByID(%s)""", (str(user_id),)).all()
+            trans.commit()
+            return res
+        except sqlalchemy.exc.PendingRollbackError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="ROLLBACK OCCURRED")
+        except sqlalchemy.exc.OperationalError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="OPS ERROR")
+        except sqlalchemy.exc.InvalidRequestError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+        except sqlalchemy.exc.InternalError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
 
 
 @ticket_router.put("/edit-ticket/{ticket_id}")
 def edit_ticket(ticket: Ticket, ticket_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
-    trans = conn.begin()
-    edited_ticket = db.execute(f"""call updateTicketProblem(%s,%s,%s,%s)""", (str(ticket.subject), str(ticket.type),
+    with conn.begin() as trans:
+        try:
+            edited_ticket = db.execute(f"""call updateTicketProblem(%s,%s,%s,%s)""", (str(ticket.subject), str(ticket.type),
                                                                               str(ticket.description),
                                                                               str(ticket_id))).first()
-    trans.commit()
-    return edited_ticket
+            trans.commit()
+            return edited_ticket
+        except sqlalchemy.exc.PendingRollbackError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="ROLLBACK OCCURRED")
+        except sqlalchemy.exc.OperationalError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="OPS ERROR")
+        except sqlalchemy.exc.InvalidRequestError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+        except sqlalchemy.exc.InternalError as err:
+            trans.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="INVALID REQ")
+
 
 
 @ticket_router.delete("/delete-ticket/{ticket_id}")
