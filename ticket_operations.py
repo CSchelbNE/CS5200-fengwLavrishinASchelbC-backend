@@ -17,7 +17,7 @@ def get_users_tickets(user_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
     with conn.begin() as trans:
         try:
-            res = conn.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).all()
+            res = conn.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).fetchall()
             trans.commit()
             return res
         except sqlalchemy.exc.PendingRollbackError as err:
