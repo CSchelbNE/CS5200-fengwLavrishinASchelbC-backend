@@ -15,7 +15,7 @@ ticket_router = APIRouter(
 @ticket_router.get("/get-tickets/{user_id}")
 def get_users_tickets(user_id: int, db: Engine = Depends(get_db)):
     conn = db.connect()
-    with conn.begin as trans:
+    with conn.begin() as trans:
         try:
             res = conn.execute(f"""CALL selectTicketsByID(%s)""", (str(user_id),)).all()
             trans.commit()
